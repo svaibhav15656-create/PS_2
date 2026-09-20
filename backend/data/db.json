@@ -4,7 +4,7 @@
       "id": "f49f0109-384f-4f28-b118-bc5d849b27cf",
       "name": "Asha Patil",
       "role": "citizen",
-      "aadhaar": "enc:9c78c1ab6314c2bb345ed9ee:c948f9cc27bf5cbdcf86f2906282f53e:82cdfb0c9b826545bbeff9673edd",
+      "aadhaar": "enc:c6fbc7429478ac2c0217aabb:c04bc14c6fd4b54e215dcb3ea7c88f6d:ab5e8bc33cb3567d15a983c16d32",
       "mobile": "9876543210",
       "email": "asha@example.com",
       "passwordHash": "$2a$08$HUf9PH86e9DgakNCc61EzuFrorswxV9ojrAgqhBQCERfpqPX91tbS"
@@ -122,7 +122,38 @@
       ]
     }
   ],
-  "applications": [],
+  "applications": [
+    {
+      "id": "bd26c927-ac74-47cf-ae1b-e1df62860e92",
+      "citizenId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "serviceId": "6e01d234-4323-4829-9b63-2dc6415734c9",
+      "departmentId": "cb98cca2-3600-4806-b22a-40fc0170cb49",
+      "status": "In Progress",
+      "currentStageIndex": 0,
+      "data": {
+        "note": "msdxvfs",
+        "annualIncome": "3000000",
+        "purpose": "house loan"
+      },
+      "consentUsed": null,
+      "identityVerification": {
+        "verified": true,
+        "nameMatch": true,
+        "ageAbove18": true
+      },
+      "createdAt": "2026-09-20T11:43:55.961Z",
+      "updatedAt": "2026-09-20T11:43:55.961Z",
+      "history": [
+        {
+          "stage": "Submitted",
+          "at": "2026-09-20T11:43:55.961Z",
+          "by": "Asha Patil",
+          "note": "Application submitted"
+        }
+      ],
+      "atRisk": false
+    }
+  ],
   "consents": [],
   "auditLogs": [
     {
@@ -144,10 +175,59 @@
       "entityId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
       "details": {},
       "timestamp": "2026-09-20T07:47:43.896Z"
+    },
+    {
+      "id": "df2a7c80-5cd1-4fb8-ad1e-60699c344bcc",
+      "actor": "Asha Patil",
+      "actorRole": "citizen",
+      "action": "LOGIN",
+      "entity": "user",
+      "entityId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "details": {},
+      "timestamp": "2026-09-20T11:36:49.000Z"
+    },
+    {
+      "id": "c2261a9c-8d08-4f3d-ac80-bc34c951c65a",
+      "actor": "Asha Patil",
+      "actorRole": "citizen",
+      "action": "APPLICATION_SUBMITTED",
+      "entity": "application",
+      "entityId": "bd26c927-ac74-47cf-ae1b-e1df62860e92",
+      "details": {
+        "serviceId": "6e01d234-4323-4829-9b63-2dc6415734c9",
+        "consentUsed": null,
+        "autoFilledFields": []
+      },
+      "timestamp": "2026-09-20T11:43:55.964Z"
     }
   ],
-  "notifications": [],
-  "connectorLogs": [],
+  "notifications": [
+    {
+      "id": "ee3f5aa8-0abc-421e-8bff-f94fffc8653a",
+      "citizenId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "message": "Your application for \"Income Certificate\" has been received. Track it anytime with reference bd26c927.",
+      "email": "asha@example.com",
+      "channel": "in-app",
+      "status": "sent",
+      "createdAt": "2026-09-20T11:43:55.962Z"
+    }
+  ],
+  "connectorLogs": [
+    {
+      "id": "5d8d2482-fd9a-44bb-8ff5-7b3bc0e06766",
+      "connector": "aadhaar",
+      "request": {
+        "aadhaar": "1234-5678-9012"
+      },
+      "response": {
+        "verified": true,
+        "nameMatch": true,
+        "ageAbove18": true
+      },
+      "status": "success",
+      "timestamp": "2026-09-20T11:43:55.961Z"
+    }
+  ],
   "grievances": [],
   "dataQualityFlags": [],
   "dataAccessLogs": [],

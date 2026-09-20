@@ -45,6 +45,7 @@ router.get('/stats', requireAuth, requireRole('admin', 'officer'), (req, res) =>
     rejected,
     inProgress,
     slaBreached: breached,
+    atRiskCount: apps.filter(a => a.atRisk).length,
     escalatedCount: apps.filter(a => a.escalated).length,
     slaCompliancePct: total ? Math.round(((total - breached) / total) * 100) : 100,
     grievances: {
@@ -55,6 +56,7 @@ router.get('/stats', requireAuth, requireRole('admin', 'officer'), (req, res) =>
     },
     byDepartment,
     duplicateSubmissionsPrevented: db.connectorLogs.filter(l => l.connector === 'aadhaar' && l.status === 'success').length,
+    documentReusesCount: (db.applications || []).filter(a => a.consentUsed || a.data?.annualIncomeSource === 'consent').length,
     connectorCallsTotal: db.connectorLogs.length
   });
 });

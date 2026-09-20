@@ -1,12 +1,21 @@
 let mockModeLogged = false;
 
 async function send(notification) {
+  const channel = notification.channel || 'in-app';
+  if (channel === 'sms') {
+    console.log(`[SMS Mock Gateway] Sending SMS to ${notification.mobile || 'Citizen'}: ${notification.message}`);
+    return { delivered: true, channel: 'sms', mode: 'mock' };
+  } else if (channel === 'whatsapp') {
+    console.log(`[WhatsApp Sandbox] Sending WA text to ${notification.mobile || 'Citizen'}: ${notification.message}`);
+    return { delivered: true, channel: 'whatsapp', mode: 'mock' };
+  }
+
   if (!process.env.SMTP_HOST) {
     if (!mockModeLogged) {
       console.log('Notification provider running in mock mode; set SMTP_HOST to enable email delivery.');
       mockModeLogged = true;
     }
-    return { delivered: false, mode: 'mock' };
+    return { delivered: false, mode: 'mock', channel };
   }
 
   const nodemailer = require('nodemailer');
@@ -22,7 +31,7 @@ async function send(notification) {
     subject: 'SetuOne application update',
     text: notification.message
   });
-  return { delivered: true, mode: 'smtp' };
+  return { delivered: true, mode: 'smtp', channel };
 }
 
 module.exports = { send };

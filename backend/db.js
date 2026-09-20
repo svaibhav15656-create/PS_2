@@ -5,20 +5,24 @@
 const fs = require('fs');
 const path = require('path');
 
+const { encrypt, decrypt } = require('./crypto');
+
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'data', 'db.json');
 const LOCK_FILE = `${DB_FILE}.lock`;
 
 const DEFAULT_DB = {
   users: [],          // {id, name, role: citizen|officer|admin, department_id, aadhaar, mobile, email, passwordHash}
   departments: [],     // {id, name, code}
-  services: [],        // {id, department_id, name, workflow: [stage names...], slaHours}
+  services: [],        // {id, department_id, name, workflow: [stage names...], slaHours, eligibility: []}
   applications: [],    // {id, citizenId, serviceId, departmentId, status, currentStageIndex, data, createdAt, updatedAt, history:[]}
-  consents: [],        // {id, citizenId, departmentId, purpose, grantedAt, expiresAt, status}
+  consents: [],        // {id, citizenId, departmentId, fieldsCovered: [], purpose, grantedAt, expiresAt, status}
   auditLogs: [],       // {id, actor, actorRole, action, entity, entityId, timestamp, details}
   notifications: [],   // {id, citizenId|departmentId, message, channel, status, createdAt}
   connectorLogs: [],   // {id, connector, request, response, timestamp, status}
   grievances: [],      // reserved for the grievance module
-  dataQualityFlags: [] // {id, type, candidateIds, reason, status, createdAt, resolvedAt, resolvedBy}
+  dataQualityFlags: [], // {id, type, candidateIds, reason, status, createdAt, resolvedAt, resolvedBy}
+  dataAccessLogs: [],  // {id, actor, actorRole, requestingDepartmentId, citizenId, fieldsCovered, consentId, timestamp}
+  verifiedDocuments: [] // {id, citizenId, docType, verifiedBy, verifiedAt, expiresAt}
 };
 
 function load() {
@@ -36,12 +40,31 @@ function load() {
   for (const [collection, defaultValue] of Object.entries(DEFAULT_DB)) {
     if (!Array.isArray(db[collection])) db[collection] = Array.isArray(defaultValue) ? [] : defaultValue;
   }
+  // Decrypt user Aadhaar values in memory
+  if (Array.isArray(db.users)) {
+    for (const u of db.users) {
+      if (u.aadhaar && typeof u.aadhaar === 'string' && u.aadhaar.startsWith('enc:')) {
+        u.aadhaar = decrypt(u.aadhaar);
+      }
+    }
+  }
   return db;
 }
 
 function save(db) {
   const temporaryFile = `${DB_FILE}.${process.pid}.${Date.now()}.tmp`;
   let lockHandle;
+
+  // Clone DB object to encrypt user Aadhaar values before writing to file
+  const copy = JSON.parse(JSON.stringify(db));
+  if (Array.isArray(copy.users)) {
+    for (const u of copy.users) {
+      if (u.aadhaar && typeof u.aadhaar === 'string' && !u.aadhaar.startsWith('enc:')) {
+        u.aadhaar = encrypt(u.aadhaar);
+      }
+    }
+  }
+
   try {
     for (let attempt = 0; attempt < 50; attempt += 1) {
       try {
@@ -54,7 +77,7 @@ function save(db) {
       }
     }
     if (!lockHandle) throw new Error('Could not acquire database write lock');
-    fs.writeFileSync(temporaryFile, JSON.stringify(db, null, 2), 'utf-8');
+    fs.writeFileSync(temporaryFile, JSON.stringify(copy, null, 2), 'utf-8');
     fs.renameSync(temporaryFile, DB_FILE);
   } finally {
     if (fs.existsSync(temporaryFile)) fs.unlinkSync(temporaryFile);

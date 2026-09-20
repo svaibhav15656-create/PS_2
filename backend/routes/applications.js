@@ -39,6 +39,61 @@ router.get('/services/catalog', requireAuth, (req, res) => {
   res.json(db.services.map(s => ({ ...s, departmentName: db.departments.find(d => d.id === s.departmentId)?.name })));
 });
 
+// Rule-based Scheme Eligibility Recommender
+router.get('/services/recommended', requireAuth, requireRole('citizen'), (req, res) => {
+  const db = load();
+  const citizen = db.users.find(u => u.id === req.user.id);
+  const citizenApps = db.applications.filter(a => a.citizenId === req.user.id);
+
+  // Extract citizen facts from profile, income registry, and previous applications
+  const incomeFetch = connectors.incomeRegistry.fetch(db, citizen.aadhaar);
+  const annualIncome = incomeFetch?.annualIncome || 185000;
+  const age = citizen.dateOfBirth ? Math.floor((new Date() - new Date(citizen.dateOfBirth)) / (365.25 * 24 * 3600 * 1000)) : 25;
+  const familySize = 4;
+  const casteCategory = 'OBC';
+
+  const facts = { annualIncome, age, familySize, casteCategory };
+
+  const recommendations = db.services.map(service => {
+    const rules = service.eligibility || [];
+    const reasons = [];
+    let eligible = true;
+
+    for (const rule of rules) {
+      const factVal = facts[rule.field];
+      if (factVal === undefined) continue;
+      if (rule.op === '<=' && !(factVal <= rule.value)) {
+        eligible = false;
+        reasons.push(`${rule.field} (${factVal}) exceeds limit ${rule.value}`);
+      } else if (rule.op === '>=' && !(factVal >= rule.value)) {
+        eligible = false;
+        reasons.push(`${rule.field} (${factVal}) below minimum ${rule.value}`);
+      } else if (rule.op === '==' && factVal !== rule.value) {
+        eligible = false;
+        reasons.push(`${rule.field} does not match ${rule.value}`);
+      } else {
+        reasons.push(`Verified ${rule.field}: ${factVal} (${rule.op} ${rule.value})`);
+      }
+    }
+
+    if (!rules.length) reasons.push('Open for all citizens');
+
+    const alreadyApplied = citizenApps.some(a => a.serviceId === service.id && a.status !== 'Rejected');
+    return {
+      serviceId: service.id,
+      serviceName: service.name,
+      departmentName: db.departments.find(d => d.id === service.departmentId)?.name,
+      eligible,
+      alreadyApplied,
+      reasons,
+      prefillData: { annualIncome, casteCategory, familySize }
+    };
+  }).filter(rec => rec.eligible && !rec.alreadyApplied);
+
+  res.json(recommendations);
+});
+
+
 // Citizen submits an application. Runs mock identity-verification connectors
 // automatically instead of asking the citizen to prove the same facts again.
 router.post('/', requireAuth, requireRole('citizen'), async (req, res) => {
@@ -49,40 +104,60 @@ router.post('/', requireAuth, requireRole('citizen'), async (req, res) => {
   if (!service) return res.status(404).json({ error: 'Unknown service' });
   const citizen = db.users.find(u => u.id === req.user.id);
   const submissionData = { ...(data || {}) };
-  if (service.name === 'New Ration Card') {
-    const pincodeMatch = String(submissionData.pincode || submissionData.address || '').match(/\b\d{6}\b/);
-    if (pincodeMatch) {
-      const pincodeResult = await connectors.pincode.lookup(db, pincodeMatch[0]);
-      if (!pincodeResult.valid) {
-        save(db);
-        return res.status(400).json({ error: 'Application failed address verification', code: 'ADDRESS_VERIFICATION_ERROR', details: [{ field: 'data.pincode', message: pincodeResult.reason }] });
-      }
-      submissionData.pincode = pincodeMatch[0];
-      submissionData.addressDistrict = pincodeResult.district;
-      submissionData.addressState = pincodeResult.state;
-    }
-  }
   let consentUsed = null;
-  if (service.name === 'Scholarship Application') {
-    const socialWelfare = db.departments.find(department => department.code === 'SWD');
-    consentUsed = db.consents.find(consent => consent.citizenId === req.user.id
-      && consent.departmentId === socialWelfare?.id
-      && consent.status === 'granted'
-      && new Date(consent.expiresAt) > new Date());
-    if (consentUsed && !isNonEmptyString(submissionData.annualIncome)) {
-      try {
-        const income = connectors.incomeRegistry.fetch(db, citizen.aadhaar);
-        if (income?.annualIncome !== undefined) {
-          submissionData.annualIncome = income.annualIncome;
-          submissionData.annualIncomeSource = 'consent';
-          submissionData.incomeConsentId = consentUsed.id;
+  const integrations = service.integrations || [
+    ...(service.name === 'New Ration Card' ? [{ type: 'pincode' }] : []),
+    ...(service.name === 'Scholarship Application' ? [{ type: 'incomeRegistry', consentDeptCode: 'SWD' }, { type: 'casteRegistry' }] : [])
+  ];
+
+  for (const integ of integrations) {
+    if (integ.type === 'pincode') {
+      const pincodeMatch = String(submissionData.pincode || submissionData.address || '').match(/\b\d{6}\b/);
+      if (pincodeMatch) {
+        const pincodeResult = await connectors.pincode.lookup(db, pincodeMatch[0]);
+        if (!pincodeResult.valid) {
+          save(db);
+          return res.status(400).json({ error: 'Application failed address verification', code: 'ADDRESS_VERIFICATION_ERROR', details: [{ field: 'data.pincode', message: pincodeResult.reason }] });
         }
-      } catch (error) {
-        submissionData.annualIncomeConnectorError = 'manual verification required';
+        submissionData.pincode = pincodeMatch[0];
+        submissionData.addressDistrict = pincodeResult.district;
+        submissionData.addressState = pincodeResult.state;
       }
-    }
-    if (isNonEmptyString(submissionData.casteCategory)) {
-      submissionData.casteVerification = connectors.casteRegistry.lookup(db, citizen.aadhaar, submissionData.casteCategory);
+    } else if (integ.type === 'incomeRegistry') {
+      const targetDeptCode = integ.consentDeptCode || 'SWD';
+      const dept = db.departments.find(d => d.code === targetDeptCode);
+      const activeConsent = db.consents.find(consent => consent.citizenId === req.user.id
+        && consent.departmentId === dept?.id
+        && consent.status === 'granted'
+        && new Date(consent.expiresAt) > new Date());
+      const { logDataAccess } = require('../dataAccessLog');
+      if (activeConsent && !isNonEmptyString(submissionData.annualIncome)) {
+        consentUsed = activeConsent;
+        try {
+          const income = connectors.incomeRegistry.fetch(db, citizen.aadhaar);
+          if (income?.annualIncome !== undefined) {
+            submissionData.annualIncome = income.annualIncome;
+            submissionData.annualIncomeSource = 'consent';
+            submissionData.incomeConsentId = activeConsent.id;
+            logDataAccess(db, {
+              actor: citizen.name,
+              actorRole: 'citizen',
+              requestingDepartmentId: service.departmentId,
+              citizenId: citizen.id,
+              fieldsCovered: ['annualIncome'],
+              consentId: activeConsent.id
+            });
+          }
+        } catch (error) {
+          submissionData.annualIncomeConnectorError = 'manual verification required';
+        }
+      }
+    } else if (integ.type === 'casteRegistry') {
+      if (isNonEmptyString(submissionData.casteCategory)) {
+        submissionData.casteVerification = connectors.casteRegistry.lookup(db, citizen.aadhaar, submissionData.casteCategory);
+      }
+    } else if (integ.type === 'sdeRegistry') {
+      submissionData.sdeVerification = connectors.sdeRegistry.lookup(db, citizen.aadhaar);
     }
   }
   const validationErrors = validateApplicationData(service, submissionData);

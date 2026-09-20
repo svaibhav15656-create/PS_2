@@ -3,40 +3,74 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Officer Console — SetuOne</title>
+<title>myAadhaar / SetuOne — Officer Console</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<header class="masthead">
-  <div class="seal">SetuOne<small>Officer Console</small></div>
-  <nav><span class="role-pill" id="whoami"></span><button onclick="logout()">Sign out</button></nav>
+
+<header class="gov-header">
+  <a href="index.html" class="gov-brand">
+    <svg class="gov-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5L15 25V75L50 95L85 75V25L50 5Z" fill="#0D2847"/>
+      <circle cx="50" cy="50" r="25" stroke="#FFFFFF" stroke-width="4"/>
+      <path d="M50 30V70M30 50H70" stroke="#FF9933" stroke-width="4"/>
+    </svg>
+    <div class="gov-brand-text">
+      <h1>Unique Identification Authority of India</h1>
+      <p>Officer Verification & Processing Console</p>
+    </div>
+  </a>
+
+  <nav class="gov-nav">
+    <span class="badge badge-info" id="whoami"></span>
+    <button onclick="logout()" style="color:#dc2626; font-weight:600;">Sign out</button>
+  </nav>
 </header>
 
-<main>
-  <h1>Applications queue</h1>
-  <p class="lede">Every application filed for your department, wherever the citizen submitted it from.</p>
-
-  <div class="grid-3" id="summaryCards"></div>
-
-  <div class="card">
-    <h2>Grievances</h2>
-    <table id="grievanceTable"><thead><tr><th>Subject</th><th>Application</th><th>Status</th><th></th></tr></thead><tbody></tbody></table>
+<main class="main-content">
+  <div class="section-header">
+    <h2 class="section-title">Applications Processing Queue</h2>
+    <p class="section-desc">Review, verify, advance workflows, and look up consent-gated citizen records for your department.</p>
   </div>
 
-  <div class="card">
-    <table id="appsTable">
-      <thead><tr><th>Reference</th><th>Citizen</th><th>Service</th><th>Stage</th><th>Status</th><th></th></tr></thead>
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:32px;" id="summaryCards"></div>
+
+  <!-- Citizen Lookup Card -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:12px; color:#0d2847;">Citizen Lookup (Golden Record)</h3>
+    <div style="display:flex; gap:12px; margin-bottom:12px;">
+      <input id="lookupInput" class="form-control" placeholder="Enter Aadhaar Number / Mobile / Citizen ID..." style="flex:1;" />
+      <button class="btn-primary" onclick="searchCitizen()">Search Record</button>
+    </div>
+    <div id="lookupResults"></div>
+  </div>
+
+  <!-- Grievances Table -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:16px; color:#0d2847;">Grievances Queue</h3>
+    <table class="data-table" id="grievanceTable">
+      <thead><tr><th>Subject</th><th>Application Ref</th><th>Status</th><th>Action</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <div class="card" id="detailCard" style="display:none">
-    <h2 id="detailTitle"></h2>
-    <ul class="timeline" id="detailTimeline"></ul>
-    <div id="actionErr"></div>
-    <div id="actionArea"></div>
+  <!-- Applications Table -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:16px; color:#0d2847;">Department Applications</h3>
+    <table class="data-table" id="appsTable">
+      <thead><tr><th>Reference</th><th>Citizen Name</th><th>Service</th><th>Current Stage</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <!-- Application Detail Modal / Panel -->
+  <div class="card-panel" id="detailCard" style="display:none;">
+    <h3 id="detailTitle" style="font-size:1.25rem; font-weight:700; color:#0d2847; margin-bottom:14px;"></h3>
+    <ul id="detailTimeline" style="padding-left:20px; font-size:0.9rem; line-height:1.8;"></ul>
+    <div id="actionErr" style="margin-top:12px;"></div>
+    <div id="actionArea" style="margin-top:16px;"></div>
   </div>
 </main>
 
@@ -58,22 +92,27 @@ async function refresh() {
   const completed = apps.filter(a => a.status === 'Completed').length;
   const breached = apps.filter(a => a.slaBreached).length;
   document.getElementById('summaryCards').innerHTML = `
-    <div class="card stat"><span class="num">${total}</span><span class="label">Applications</span></div>
-    <div class="card stat"><span class="num">${completed}</span><span class="label">Completed</span></div>
-    <div class="card stat"><span class="num">${breached}</span><span class="label">SLA breached</span></div>`;
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#0056b3;">${total}</div><div style="font-size:0.85rem; color:#64748b;">Total Applications</div></div>
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#16a34a;">${completed}</div><div style="font-size:0.85rem; color:#64748b;">Completed</div></div>
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#dc2626;">${breached}</div><div style="font-size:0.85rem; color:#64748b;">SLA Breached</div></div>`;
 
   document.querySelector('#appsTable tbody').innerHTML = apps.map(a => `
     <tr>
-      <td class="hint">${a.id.slice(0,8)}</td>
-      <td>${a.citizenName}</td>
+      <td style="font-family:monospace; font-weight:600;">${a.id.slice(0,8)}</td>
+      <td><b>${a.citizenName}</b></td>
       <td>${a.serviceName}</td>
-      <td>${a.currentStage}${a.escalated ? '<span class="tag breach">Escalated</span>' : ''}${a.slaBreached ? '<span class="tag breach">Breach</span>' : ''}</td>
-      <td>${statusTag(a.status)}</td>
-      <td><button class="secondary" onclick="showDetail('${a.id}')">Open</button></td>
-    </tr>`).join('') || '<tr><td colspan="6" class="muted">No applications for your department yet.</td></tr>';
+      <td>${a.currentStage} ${a.escalated ? '<span class="badge badge-danger">Escalated</span>' : ''} ${a.slaBreached ? '<span class="badge badge-warning">Breached</span>' : ''}</td>
+      <td><span class="badge ${a.status === 'Completed' ? 'badge-success' : 'badge-info'}">${a.status}</span></td>
+      <td><button class="btn-secondary" style="padding:4px 12px; font-size:0.8rem;" onclick="showDetail('${a.id}')">Open Application</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">No applications queue.</td></tr>';
+
   document.querySelector('#grievanceTable tbody').innerHTML = grievances.map(g => `
-    <tr><td>${g.subject}</td><td class="hint">${g.applicationId.slice(0, 8)}</td><td>${statusTag(g.status)}</td>
-    <td>${g.status === 'Resolved' ? '' : `<button class="secondary" onclick="respondToGrievance('${g.id}')">Respond</button>`}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">No grievances for your department.</td></tr>';
+    <tr>
+      <td><b>${g.subject}</b></td>
+      <td style="font-family:monospace;">${g.applicationId.slice(0, 8)}</td>
+      <td><span class="badge ${g.status === 'Resolved' ? 'badge-success' : 'badge-warning'}">${g.status}</span></td>
+      <td>${g.status === 'Resolved' ? '' : `<button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="respondToGrievance('${g.id}')">Respond</button>`}</td>
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No open grievances.</td></tr>';
 }
 
 async function respondToGrievance(id) {
@@ -83,7 +122,7 @@ async function respondToGrievance(id) {
     await api(`/grievances/${id}/respond`, { method: 'PATCH', body: { response } });
     await refresh();
   } catch (err) {
-    document.getElementById('actionErr').innerHTML = `<div class="error">${err.message}</div>`;
+    document.getElementById('actionErr').innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 }
 
@@ -92,20 +131,24 @@ function showDetail(id) {
   document.getElementById('detailCard').style.display = 'block';
   document.getElementById('detailTitle').textContent = `${app.serviceName} — ${app.citizenName}`;
   document.getElementById('detailTimeline').innerHTML = app.history.map(h =>
-    `<li><div class="when">${fmtDate(h.at)} · ${h.by}</div><b>${h.stage}</b>${h.note ? ' — ' + h.note : ''}</li>`).join('');
+    `<li><div style="font-size:0.8rem; color:#64748b;">${fmtDate(h.at)} · ${h.by}</div><b>${h.stage}</b>${h.note ? ' — ' + h.note : ''}</li>`).join('');
 
   const actionArea = document.getElementById('actionArea');
   document.getElementById('actionErr').innerHTML = '';
   if (app.status !== 'In Progress') {
-    actionArea.innerHTML = `<p class="muted">This application is ${app.status.toLowerCase()} — no further action needed.</p>`;
+    actionArea.innerHTML = `<p style="color:#94a3b8; font-size:0.9rem;">This application is ${app.status.toLowerCase()} — no further action required.</p>`;
     return;
   }
   const nextStage = app.workflow[app.currentStageIndex + 1];
   actionArea.innerHTML = `
-    <label>Note (optional)</label>
-    <textarea id="noteBox" rows="2" placeholder="Reviewer note"></textarea>
-    <button class="primary" onclick="advance('${app.id}')">Advance to "${nextStage}"</button>
-    <button class="danger" style="margin-left:10px" onclick="reject('${app.id}')">Reject application</button>`;
+    <div class="form-group">
+      <label>Reviewer Note (Optional)</label>
+      <textarea id="noteBox" class="form-control" rows="2" placeholder="Note..."></textarea>
+    </div>
+    <div style="display:flex; gap:12px;">
+      <button class="btn-primary" onclick="advance('${app.id}')">Advance to "${nextStage}"</button>
+      <button class="btn-secondary" style="color:#dc2626; border-color:#fca5a5;" onclick="reject('${app.id}')">Reject Application</button>
+    </div>`;
   document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -116,7 +159,7 @@ async function advance(id) {
     await refresh();
     showDetail(id);
   } catch (err) {
-    document.getElementById('actionErr').innerHTML = `<div class="error">${err.message}</div>`;
+    document.getElementById('actionErr').innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 }
 
@@ -128,7 +171,69 @@ async function reject(id) {
     await refresh();
     showDetail(id);
   } catch (err) {
-    document.getElementById('actionErr').innerHTML = `<div class="error">${err.message}</div>`;
+    document.getElementById('actionErr').innerHTML = `<div class="error-msg">${err.message}</div>`;
+  }
+}
+
+async function searchCitizen() {
+  const q = document.getElementById('lookupInput').value.trim();
+  if (!q) return;
+  try {
+    const results = await api(`/citizens/lookup?query=${encodeURIComponent(q)}`);
+    if (!results.length) {
+      document.getElementById('lookupResults').innerHTML = '<p style="color:#94a3b8; padding:12px 0;">No citizens found matching query.</p>';
+      return;
+    }
+    document.getElementById('lookupResults').innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Aadhaar</th><th>Mobile</th><th>Action</th></tr></thead>
+        <tbody>
+          ${results.map(c => `
+            <tr>
+              <td><b>${c.name}</b></td>
+              <td>${c.aadhaar || 'N/A'}</td>
+              <td>${c.mobile}</td>
+              <td><button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="viewGoldenRecord('${c.id}')">View Golden Record</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  } catch (err) {
+    document.getElementById('lookupResults').innerHTML = `<div class="error-msg">${err.message}</div>`;
+  }
+}
+
+async function viewGoldenRecord(citizenId) {
+  try {
+    const rec = await api(`/citizens/${citizenId}/golden-record`);
+    const c = rec.citizen;
+    const consentNotice = rec.crossDeptConsentGranted
+      ? '<span class="badge badge-success">Consent Granted (Full Access)</span>'
+      : '<span class="badge badge-warning">No Consent (Restricted Access)</span>';
+
+    document.getElementById('detailCard').style.display = 'block';
+    document.getElementById('detailTitle').innerHTML = `Golden Record: ${c.name} ${consentNotice}`;
+    document.getElementById('detailTimeline').innerHTML = `
+      <li><b>Aadhaar:</b> ${c.aadhaar || 'N/A'}</li>
+      <li><b>Mobile:</b> ${c.mobile}</li>
+      <li><b>Email:</b> ${c.email}</li>
+      <li><b>Total Applications:</b> ${rec.summary.totalApplications} (${rec.summary.completed} completed, ${rec.summary.pending} pending)</li>
+      <div style="margin-top:16px;">
+        <h4 style="font-weight:700;">Applications History</h4>
+        <ul style="padding-left:16px; margin-top:8px;">
+          ${rec.applications.map(a => `
+            <li style="margin-bottom:6px;">
+              <b>${a.serviceName || 'Service'}</b> (${a.departmentName}) - ${a.status}
+              ${a.restricted ? '<em style="color:#dc2626;">[Restricted - Requires Consent]</em>' : ''}
+            </li>
+          `).join('')}
+        </ul>
+      </div>
+    `;
+    document.getElementById('actionArea').innerHTML = '';
+    document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth' });
+  } catch (err) {
+    alert(`Failed to fetch Golden Record: ${err.message}`);
   }
 }
 </script>

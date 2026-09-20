@@ -3,40 +3,199 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>SetuOne — Unified Service Gateway</title>
+<title>SetuOne — Maharashtra State Interoperability Gateway (SIH-129)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<header class="masthead">
-  <div class="seal">SetuOne<small>Unified Government Service Gateway — Maharashtra (Prototype)</small></div>
+
+<!-- Header Bar -->
+<header class="gov-header">
+  <a href="index.html" class="gov-brand">
+    <svg class="gov-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5L15 25V75L50 95L85 75V25L50 5Z" fill="#0D2847"/>
+      <circle cx="50" cy="50" r="25" stroke="#FFFFFF" stroke-width="4"/>
+      <path d="M50 30V70M30 50H70" stroke="#FF9933" stroke-width="4"/>
+    </svg>
+    <div class="gov-brand-text">
+      <h1>Government of Maharashtra</h1>
+      <p>Department of Skills, Employment, Entrepreneurship & Innovation · SetuOne (SIH-129)</p>
+    </div>
+  </a>
+
+  <nav class="gov-nav">
+    <a href="index.html" class="gov-nav-active">SetuOne Portal</a>
+    <a href="#departments">Departments</a>
+    <a href="#interop">Interoperability Middleware</a>
+    <a href="#mdm">Master Data Registry</a>
+    <a href="#contact">Help & Support</a>
+  </nav>
 </header>
 
-<main>
-  <div class="auth-shell">
-    <h1 style="text-align:center">Sign in</h1>
-    <p class="lede" style="text-align:center;margin-left:auto;margin-right:auto">One identity across every department portal.</p>
+<!-- Hero Section with Floating SetuOne Identity Graphic & SetuAssist Widget -->
+<section class="hero-banner">
+  <div class="hero-container">
+    <div>
+      <div class="hero-title">Setu<span>One</span></div>
+      <div class="hero-subtitle">One Identity. Every Department. Zero Friction.</div>
+      <p class="hero-desc">Unified Interoperability & Service Integration Gateway for Maharashtra Govt Digital Platforms (SIH-129). Access revenue, skill development, civil supplies, and social welfare services in one portal.</p>
 
-    <div class="card">
-      <div id="err"></div>
-      <form id="loginForm">
-        <label for="email">Email</label>
-        <input id="email" type="email" required placeholder="you@example.com" />
-        <label for="password">Password</label>
-        <input id="password" type="password" required placeholder="••••••••" />
-        <button class="primary" type="submit" style="width:100%">Sign in with SetuOne ID</button>
-      </form>
-      <div class="demo-creds">
-        Demo accounts (password: <b>password123</b>)<br/>
-        citizen — asha@example.com<br/>
-        officer (Revenue) — rohan.rev@gov.in<br/>
-        officer (Skill Dev) — neha.sde@gov.in<br/>
-        admin — admin@gov.in
+      <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); padding: 24px; border-radius: 12px; max-width: 440px; border: 1px solid rgba(255,255,255,0.2);">
+        <h3 style="color:#fff; margin-bottom:12px; font-size:1.1rem;">Sign in with SetuOne Unified ID</h3>
+        <div id="err"></div>
+        <form id="loginForm">
+          <div style="margin-bottom:12px;">
+            <label style="color:#cbd5e1; font-size:0.8rem; display:block; margin-bottom:4px;">Email / User ID</label>
+            <input id="email" type="email" required placeholder="asha@example.com" class="form-control" style="background:#fff;" />
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="color:#cbd5e1; font-size:0.8rem; display:block; margin-bottom:4px;">Password</label>
+            <input id="password" type="password" required placeholder="••••••••" class="form-control" style="background:#fff;" />
+          </div>
+          <button class="hero-btn" type="submit" style="width:100%; justify-content:center;">
+            Login to SetuOne Gateway <span>→</span>
+          </button>
+        </form>
+        <div style="margin-top:14px; font-size:0.8rem; color:#e2e8f0; text-align:center;">
+          Demo accounts (password: <b>password123</b>):<br/>
+          Citizen: <b>asha@example.com</b> · Officer: <b>rohan.rev@gov.in</b> · Admin: <b>admin@gov.in</b>
+        </div>
       </div>
     </div>
 
-    <p style="text-align:center" class="hint">New citizen? <a href="/register.html">Create an account</a></p>
+    <!-- Floating Graphic SetuOne Citizen Golden Card -->
+    <div style="position:relative;">
+      <div class="aadhaar-card-graphic">
+        <div class="aadhaar-flag-strip"></div>
+        <div class="aadhaar-card-header">
+          <div style="font-weight:700; font-size:0.8rem; color:#0f172a;">महाराष्ट्र शासन / Govt of Maharashtra</div>
+          <div style="font-weight:700; font-size:0.85rem; color:#1d4ed8;">SetuOne Golden ID</div>
+        </div>
+        <div class="aadhaar-card-body">
+          <div class="aadhaar-avatar">🏛️</div>
+          <div>
+            <div style="font-weight:700; font-size:1.05rem;">Asha Patil</div>
+            <div style="font-size:0.8rem; color:#64748b;">DOB: 15/08/1995 | Gender: Female</div>
+            <div style="font-size:0.75rem; color:#64748b; margin-top:4px;">MDM Status: Verified & Consolidated</div>
+          </div>
+        </div>
+        <div class="aadhaar-number">1234-5678-9012</div>
+        <div class="aadhaar-tagline">SetuOne · Interoperable Governance for Maharashtra</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SetuAssist Extension Floating Popup Overlay (Exact SIH Widget Match) -->
+<div class="govassist-widget">
+  <div class="govassist-header">
+    <div class="govassist-icon">S</div>
+    <div class="govassist-title">
+      <h3>SetuAssist (SIH-129)</h3>
+      <p>Fill government forms, not your time.</p>
+    </div>
+  </div>
+  <div class="govassist-banner">
+    <span>🛡️</span>
+    <div>
+      <b>SetuOne Golden Record details detected</b><br/>
+      Consent-gated autofill active across all Maharashtra state department portals.
+    </div>
+  </div>
+  <div class="govassist-fields">
+    <div class="govassist-row">
+      <label>👤 Full Name</label>
+      <span>Asha Patil <input type="checkbox" checked class="govassist-checkbox"></span>
+    </div>
+    <div class="govassist-row">
+      <label>📅 Date of Birth</label>
+      <span>15 Aug 1995 <input type="checkbox" checked class="govassist-checkbox"></span>
+    </div>
+    <div class="govassist-row">
+      <label>💰 Annual Income</label>
+      <span>₹1,85,000 (Tehsil Verified) <input type="checkbox" checked class="govassist-checkbox"></span>
+    </div>
+    <div class="govassist-row">
+      <label>🎓 Skill Status</label>
+      <span>Certified Solar Tech <input type="checkbox" checked class="govassist-checkbox"></span>
+    </div>
+    <div class="govassist-row">
+      <label>📱 Mobile Number</label>
+      <span>+91 98765 43210 <input type="checkbox" checked class="govassist-checkbox"></span>
+    </div>
+  </div>
+  <div class="govassist-actions">
+    <button class="btn-save-profile" onclick="alert('Profile details synced via SetuOne Golden Record!')">
+      ☁️ Save to Golden Profile
+    </button>
+    <button class="btn-view-fields" onclick="window.location.href='/citizen.html'">
+      View All Detected Fields & Services
+    </button>
+  </div>
+</div>
+
+<!-- Main Services Section (Tailored to SIH Problem Statement) -->
+<main class="main-content">
+  <div class="section-header">
+    <h2 class="section-title">Integrated Department Services</h2>
+    <p class="section-desc">Unified cross-department service catalog under the Govt. of Maharashtra Interoperability Framework (SIH-129). Click any service to apply with consent-backed auto-filled details.</p>
+  </div>
+
+  <div class="services-grid">
+    <!-- Card 1 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">📜</div>
+      <div class="service-info">
+        <h4>Income Certificate</h4>
+        <p>Revenue Department service. Auto-fetches annual income records from Tehsil Revenue Registry via SetuOne connector without resubmission.</p>
+      </div>
+    </a>
+
+    <!-- Card 2 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">🎓</div>
+      <div class="service-info">
+        <h4>Skill Training Enrollment</h4>
+        <p>Dept of Skills & Employment service. Enrolls candidates in certified vocational trades using unified Golden Record identity.</p>
+      </div>
+    </a>
+
+    <!-- Card 3 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">🌾</div>
+      <div class="service-info">
+        <h4>New Ration Card</h4>
+        <p>Food & Civil Supplies service. Auto-verifies residential pincode & district via India Post connector gate.</p>
+      </div>
+    </a>
+
+    <!-- Card 4 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">🏛️</div>
+      <div class="service-info">
+        <h4>Scholarship Application</h4>
+        <p>Social Welfare Department service. Consent-gated income and caste certificate auto-validation across department registries.</p>
+      </div>
+    </a>
+
+    <!-- Card 5 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">🤝</div>
+      <div class="service-info">
+        <h4>DEPA Consent Manager</h4>
+        <p>Manage granular data-sharing consent, view data access audit trails ("Who accessed my data"), or revoke consent anytime.</p>
+      </div>
+    </a>
+
+    <!-- Card 6 -->
+    <a href="/citizen.html" class="service-card">
+      <div class="service-icon-box">🤖</div>
+      <div class="service-info">
+        <h4>AI Citizen Assistant</h4>
+        <p>Real-time conversational assistant answering application tracking queries, document requirements, and scheme recommendations.</p>
+      </div>
+    </a>
   </div>
 </main>
 
@@ -55,7 +214,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     else if (user.role === 'officer') window.location.href = '/officer.html';
     else window.location.href = '/admin.html';
   } catch (err) {
-    errBox.innerHTML = `<div class="error">${err.message}</div>`;
+    errBox.innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 });
 </script>

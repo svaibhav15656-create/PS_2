@@ -1,7 +1,7 @@
 // api.js — thin fetch wrapper shared by every page. Keeps a JWT in
 // localStorage to demonstrate the federated-identity/SSO flow: log in once,
 // the same token is used against every "department" endpoint.
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:4000/api';
 
 function getToken() { return localStorage.getItem('gi_token'); }
 function getUser() { try { return JSON.parse(localStorage.getItem('gi_user')); } catch { return null; } }

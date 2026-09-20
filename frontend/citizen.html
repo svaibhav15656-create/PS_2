@@ -3,75 +3,144 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Services — SetuOne</title>
+<title>SetuOne (SIH-129) — Citizen Services Portal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
+<script src="js/i18n.js"></script>
 </head>
 <body>
-<header class="masthead">
-  <div class="seal">SetuOne<small>Citizen Portal</small></div>
-  <nav>
-    <span class="role-pill" id="whoami"></span>
-    <button onclick="logout()">Sign out</button>
+
+<!-- Header -->
+<header class="gov-header">
+  <a href="index.html" class="gov-brand">
+    <svg class="gov-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5L15 25V75L50 95L85 75V25L50 5Z" fill="#0D2847"/>
+      <circle cx="50" cy="50" r="25" stroke="#FFFFFF" stroke-width="4"/>
+      <path d="M50 30V70M30 50H70" stroke="#FF9933" stroke-width="4"/>
+    </svg>
+    <div class="gov-brand-text">
+      <h1 data-i18n="brand_title">Government of Maharashtra</h1>
+      <p>SetuOne Interoperability Gateway (SIH-129) · Citizen Service Portal</p>
+    </div>
+  </a>
+
+  <nav class="gov-nav">
+    <select onchange="setLanguage(this.value)" style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-weight:500;">
+      <option value="en">English</option>
+      <option value="hi">हिंदी (Hindi)</option>
+      <option value="mr">मराठी (Marathi)</option>
+    </select>
+    <button class="btn-secondary" onclick="toggleKiosk()" style="padding:6px 14px;">Kiosk Mode</button>
+    <span class="badge badge-info" id="whoami"></span>
+    <button onclick="logout()" data-i18n="sign_out" style="color:#dc2626; font-weight:600;">Sign out</button>
   </nav>
 </header>
 
-<main>
-  <h1>My services</h1>
-  <p class="lede">Every application you've filed, across every department, tracked in one place — no need to visit separate portals.</p>
+<main class="main-content">
+  <!-- Top Banner -->
+  <div class="section-header">
+    <h2 class="section-title" data-i18n="overview">My Integrated Services & Welfare Dashboard</h2>
+    <p class="section-desc">Track every application, grant consent for cross-department data sharing, and view personalized scheme recommendations across Maharashtra state departments.</p>
+  </div>
 
-  <div class="grid-3" id="summaryCards"></div>
+  <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:32px;" id="summaryCards"></div>
 
-  <div class="grid-2">
-    <div class="card">
-      <h2>Apply for a service</h2>
+  <!-- Scheme Eligibility Recommender Card -->
+  <div class="card-panel" style="border-left:4px solid #0066ff;">
+    <h3 class="section-title" style="font-size:1.3rem; margin-bottom:12px;" data-i18n="recommended_schemes">Recommended Schemes for You</h3>
+    <div id="recommendedList" style="display:flex; flex-direction:column; gap:12px;"></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+    <!-- Apply Form -->
+    <div class="card-panel">
+      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:14px; color:#0d2847;">Apply for a Service</h3>
       <div id="applyErr"></div>
       <form id="applyForm">
-        <label>Service</label>
-        <select id="serviceSelect"></select>
+        <div class="form-group">
+          <label>Select Government Service</label>
+          <select id="serviceSelect" class="form-control"></select>
+        </div>
         <div id="serviceFields"></div>
-        <label>Note / supporting details</label>
-        <textarea id="applyNote" rows="3" placeholder="Any additional details for this application"></textarea>
-        <button class="primary" type="submit">Submit application</button>
+        <div class="form-group">
+          <label>Note / Supporting Details</label>
+          <textarea id="applyNote" class="form-control" rows="3" placeholder="Additional details..."></textarea>
+        </div>
+        <button class="btn-primary" type="submit" style="width:100%;">Submit Application</button>
       </form>
-      <p class="hint" id="verifyNote"></p>
+      <p id="verifyNote" style="font-size:0.8rem; color:#64748b; margin-top:12px;"></p>
     </div>
 
-    <div class="card">
-      <h2>Data sharing consent</h2>
-      <p class="hint">Grant a department permission to fetch your records from another department, instead of re-submitting documents.</p>
+    <!-- Data Sharing Consent -->
+    <div class="card-panel">
+      <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:6px; color:#0d2847;" data-i18n="consent_management">Data Sharing Consent</h3>
+      <p style="font-size:0.85rem; color:#64748b; margin-bottom:16px;">Grant a department permission to pull your records from another department automatically.</p>
       <div id="consentErr"></div>
       <form id="consentForm">
-        <label>Department</label>
-        <select id="consentDept"></select>
-        <label>Purpose</label>
-        <input id="consentPurpose" placeholder="e.g. Verify income for scholarship" required />
-        <button class="secondary" type="submit">Grant consent</button>
+        <div class="form-group">
+          <label>Target Department</label>
+          <select id="consentDept" class="form-control"></select>
+        </div>
+        <div class="form-group">
+          <label>Purpose</label>
+          <input id="consentPurpose" class="form-control" placeholder="e.g. Verify income for scholarship" required />
+        </div>
+        <button class="btn-secondary" type="submit" style="width:100%;">Grant Consent</button>
       </form>
-      <div id="consentList" style="margin-top:16px"></div>
+      <div id="consentList" style="margin-top:20px;"></div>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Application tracker</h2>
-    <table id="appsTable">
-      <thead><tr><th>Reference</th><th>Service</th><th>Department</th><th>Stage</th><th>Status</th><th></th></tr></thead>
+  <!-- Application Tracker Table -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:16px; color:#0d2847;">Application Tracker</h3>
+    <table class="data-table" id="appsTable">
+      <thead><tr><th>Reference</th><th>Service Name</th><th>Department</th><th>Current Stage</th><th>Status</th><th>Action</th></tr></thead>
       <tbody></tbody>
     </table>
   </div>
 
-  <div class="card" id="detailCard" style="display:none">
-    <h2 id="detailTitle"></h2>
-    <ul class="timeline" id="detailTimeline"></ul>
-    <div id="grievanceArea"></div>
+  <!-- DEPA Access Audit Trail -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:6px; color:#0d2847;" data-i18n="who_accessed_my_data">Who Accessed My Data (DEPA Audit Trail)</h3>
+    <p style="font-size:0.85rem; color:#64748b; margin-bottom:16px;">Immutable audit log of every cross-department data exchange using your consents.</p>
+    <table class="data-table" id="accessLogsTable">
+      <thead><tr><th>Timestamp</th><th>Accessing Department</th><th>Fields Accessed</th><th>Consent Ref</th></tr></thead>
+      <tbody></tbody>
+    </table>
   </div>
 
-  <div class="card">
-    <h2>Notifications</h2>
-    <ul id="notifList" style="padding-left:18px"></ul>
+  <!-- Application Details Modal / Card -->
+  <div class="card-panel" id="detailCard" style="display:none;">
+    <h3 id="detailTitle" style="font-size:1.25rem; font-weight:700; color:#0d2847; margin-bottom:14px;"></h3>
+    <ul id="detailTimeline" style="padding-left:20px; font-size:0.9rem; line-height:1.8;"></ul>
+    <div id="grievanceArea" style="margin-top:20px;"></div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="card-panel">
+    <h3 style="font-size:1.2rem; font-weight:700; margin-bottom:14px; color:#0d2847;">Notifications</h3>
+    <ul id="notifList" style="padding-left:20px; font-size:0.9rem; color:#475569;"></ul>
   </div>
 </main>
+
+<!-- Floating AI Assistant Widget (SetuAssist SIH-129) -->
+<div id="aiWidget" style="position:fixed; bottom:24px; right:24px; width:360px; background:#ffffff; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.18); border:1px solid #e2e8f0; z-index:9999; overflow:hidden;">
+  <div style="background:#0d2847; color:#ffffff; padding:12px 16px; font-weight:700; display:flex; justify-content:space-between; align-items:center;">
+    <span>🤖 SetuAssist AI Widget</span>
+    <span style="font-size:10px; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:4px;">[AI Generated]</span>
+  </div>
+  <div id="aiMessages" style="height:200px; overflow-y:auto; padding:12px; font-size:0.85rem; background:#f8fafc;">
+    <div style="background:#e2e8f0; padding:10px; border-radius:8px; margin-bottom:10px;">
+      Hello! I am your SetuOne SIH-129 assistant. Ask me: "Where is my application?" or "What documents do I need?"
+    </div>
+  </div>
+  <form id="aiForm" onsubmit="sendAiMessage(event)" style="display:flex; border-top:1px solid #e2e8f0;">
+    <input id="aiInput" placeholder="Ask SetuAssist..." style="flex:1; border:none; padding:12px; outline:none; font-size:0.85rem;" required />
+    <button class="btn-primary" type="submit" style="border-radius:0; padding:12px 16px;">Send</button>
+  </form>
+</div>
 
 <script src="js/api.js"></script>
 <script>
@@ -92,11 +161,14 @@ async function init() {
   sSel.innerHTML = services.map(s => `<option value="${s.id}">${s.name} — ${s.departmentName}</option>`).join('');
   sSel.addEventListener('change', renderServiceFields);
   renderServiceFields();
+
   const dSel = document.getElementById('consentDept');
   dSel.innerHTML = departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
 
   await refreshRecord();
   await refreshConsents();
+  await refreshRecommendations();
+  await refreshAccessLogs();
 
   document.getElementById('applyForm').addEventListener('submit', submitApplication);
   document.getElementById('consentForm').addEventListener('submit', submitConsent);
@@ -105,23 +177,23 @@ async function init() {
 async function refreshRecord() {
   const record = await api(`/citizens/${user.id}/golden-record`);
   document.getElementById('summaryCards').innerHTML = `
-    <div class="card stat"><span class="num">${record.summary.totalApplications}</span><span class="label">Total applications</span></div>
-    <div class="card stat"><span class="num">${record.summary.pending}</span><span class="label">In progress</span></div>
-    <div class="card stat"><span class="num">${record.summary.completed}</span><span class="label">Completed</span></div>`;
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#0056b3;">${record.summary.totalApplications}</div><div style="font-size:0.85rem; color:#64748b;">Total Applications</div></div>
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#d97706;">${record.summary.pending}</div><div style="font-size:0.85rem; color:#64748b;">In Progress</div></div>
+    <div class="card-panel" style="margin:0"><div style="font-size:2rem; font-weight:800; color:#16a34a;">${record.summary.completed}</div><div style="font-size:0.85rem; color:#64748b;">Completed</div></div>`;
 
   const tbody = document.querySelector('#appsTable tbody');
   tbody.innerHTML = record.applications.map(a => `
     <tr>
-      <td class="hint">${a.id.slice(0,8)}</td>
-      <td>${a.serviceName}</td>
+      <td style="font-family:monospace; font-weight:600;">${a.id.slice(0,8)}</td>
+      <td><b>${a.serviceName}</b></td>
       <td>${a.departmentName}</td>
-      <td>${a.currentStage}${a.slaBreached ? '<span class="tag breach">SLA breached</span>' : ''}</td>
-      <td>${statusTag(a.status)}</td>
-      <td><button class="secondary" onclick="showDetail('${a.id}')">View</button></td>
-    </tr>`).join('') || '<tr><td colspan="6" class="muted">No applications yet.</td></tr>';
+      <td>${a.currentStage} ${a.slaBreached ? '<span class="badge badge-danger">SLA Breached</span>' : ''}</td>
+      <td><span class="badge ${a.status === 'Completed' ? 'badge-success' : 'badge-info'}">${a.status}</span></td>
+      <td><button class="btn-secondary" style="padding:4px 10px; font-size:0.8rem;" onclick="showDetail('${a.id}')">View</button></td>
+    </tr>`).join('') || '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">No applications filed yet.</td></tr>';
 
   document.getElementById('notifList').innerHTML = record.notifications.slice().reverse().map(n =>
-    `<li><b>${fmtDate(n.createdAt)}</b> — ${n.message}</li>`).join('') || '<li class="muted">No notifications yet.</li>';
+    `<li><b>${fmtDate(n.createdAt)}</b> — ${n.message}</li>`).join('') || '<li style="color:#94a3b8;">No notifications yet.</li>';
 
   window._record = record;
 }
@@ -131,13 +203,13 @@ function showDetail(appId) {
   document.getElementById('detailCard').style.display = 'block';
   document.getElementById('detailTitle').textContent = `${app.serviceName} — ${app.departmentName}`;
   document.getElementById('detailTimeline').innerHTML = app.history.map(h =>
-    `<li><div class="when">${fmtDate(h.at)} · ${h.by}</div><b>${h.stage}</b>${h.note ? ' — ' + h.note : ''}</li>`).join('');
+    `<li><div style="font-size:0.8rem; color:#64748b;">${fmtDate(h.at)} · ${h.by}</div><b>${h.stage}</b>${h.note ? ' — ' + h.note : ''}</li>`).join('');
   document.getElementById('grievanceArea').innerHTML = `
-    <h3>Raise a grievance</h3>
+    <h4 style="font-weight:700; margin-bottom:8px;">Raise a Grievance</h4>
     <form onsubmit="submitGrievance(event, '${app.id}')">
-      <input id="grievanceSubject" placeholder="Subject" required />
-      <textarea id="grievanceDescription" rows="3" placeholder="Describe the issue" required></textarea>
-      <button class="secondary" type="submit">Submit grievance</button>
+      <input id="grievanceSubject" class="form-control" style="margin-bottom:8px;" placeholder="Subject" required />
+      <textarea id="grievanceDescription" class="form-control" style="margin-bottom:8px;" rows="2" placeholder="Describe issue..." required></textarea>
+      <button class="btn-secondary" type="submit">Submit Grievance</button>
     </form>`;
   document.getElementById('detailCard').scrollIntoView({ behavior: 'smooth' });
 }
@@ -150,9 +222,9 @@ async function submitGrievance(event, applicationId) {
       subject: document.getElementById('grievanceSubject').value,
       description: document.getElementById('grievanceDescription').value
     }});
-    document.getElementById('grievanceArea').innerHTML = '<p class="hint">Grievance submitted. Your department will respond within the SLA window.</p>';
+    document.getElementById('grievanceArea').innerHTML = '<p class="badge badge-success">Grievance submitted successfully.</p>';
   } catch (err) {
-    document.getElementById('grievanceArea').insertAdjacentHTML('beforeend', `<div class="error">${err.message}</div>`);
+    document.getElementById('grievanceArea').insertAdjacentHTML('beforeend', `<div class="error-msg">${err.message}</div>`);
   }
 }
 
@@ -170,20 +242,22 @@ async function submitApplication(e) {
   try {
     const app = await api('/applications', { method: 'POST', body: { serviceId, data } });
     document.getElementById('verifyNote').textContent = app.identityVerification.verified
-      ? 'Identity auto-verified via Aadhaar e-KYC connector — no documents needed for this step.'
-      : `Identity could not be auto-verified (${app.identityVerification.reason}). You may be asked for manual verification.`;
+      ? 'Identity auto-verified via Aadhaar e-KYC connector.'
+      : `Identity verification note: ${app.identityVerification.reason}`;
     document.getElementById('applyForm').reset();
     await refreshRecord();
   } catch (err) {
-    errBox.innerHTML = `<div class="error">${err.message}</div>`;
+    errBox.innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 }
 
 function renderServiceFields() {
   const selectedService = services.find(service => service.id === document.getElementById('serviceSelect').value);
   document.getElementById('serviceFields').innerHTML = (selectedService?.requiredFields || []).map(field => `
-    <label>${field.replace(/[A-Z]/g, letter => ` ${letter}`).replace(/^./, letter => letter.toUpperCase())}</label>
-    <input id="service-field-${field}" ${field === 'familySize' || field === 'annualIncome' ? 'type="number" min="0"' : ''} required />
+    <div class="form-group">
+      <label>${field.replace(/[A-Z]/g, letter => ` ${letter}`).replace(/^./, letter => letter.toUpperCase())}</label>
+      <input id="service-field-${field}" class="form-control" ${field === 'familySize' || field === 'annualIncome' ? 'type="number" min="0"' : ''} required />
+    </div>
   `).join('');
 }
 
@@ -191,12 +265,16 @@ async function refreshConsents() {
   const consents = await api('/consent/mine');
   document.getElementById('consentList').innerHTML = consents.map(c => {
     const dept = departments.find(d => d.id === c.departmentId)?.name || 'Unknown';
-    return `<div style="padding:8px 0;border-top:1px solid var(--rule)">
-      <b>${dept}</b> — ${c.purpose} <span class="tag ${c.status === 'granted' ? 'completed' : 'rejected'}">${c.status}</span><br/>
-      <span class="hint">Expires ${fmtDate(c.expiresAt)}</span>
-      ${c.status === 'granted' ? `<button class="danger" style="margin-left:8px" onclick="revokeConsent('${c.id}')">Revoke</button>` : ''}
+    return `<div style="padding:10px 0; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <b>${dept}</b><br/><span style="font-size:0.8rem; color:#64748b;">${c.purpose}</span>
+      </div>
+      <div>
+        <span class="badge ${c.status === 'granted' ? 'badge-success' : 'badge-danger'}">${c.status}</span>
+        ${c.status === 'granted' ? `<button class="btn-secondary" style="padding:2px 8px; font-size:0.75rem; margin-left:8px; color:#dc2626;" onclick="revokeConsent('${c.id}')">Revoke</button>` : ''}
+      </div>
     </div>`;
-  }).join('') || '<p class="muted">No consents granted yet.</p>';
+  }).join('') || '<p style="color:#94a3b8; font-size:0.85rem;">No active consents.</p>';
 }
 
 async function submitConsent(e) {
@@ -210,13 +288,88 @@ async function submitConsent(e) {
     document.getElementById('consentForm').reset();
     await refreshConsents();
   } catch (err) {
-    errBox.innerHTML = `<div class="error">${err.message}</div>`;
+    errBox.innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 }
 
 async function revokeConsent(id) {
   await api(`/consent/${id}/revoke`, { method: 'POST' });
   await refreshConsents();
+}
+
+async function refreshRecommendations() {
+  try {
+    const recs = await api('/applications/services/recommended');
+    const container = document.getElementById('recommendedList');
+    if (!recs.length) {
+      container.innerHTML = '<p style="color:#64748b; font-size:0.85rem;">No new recommended schemes available at this time.</p>';
+      return;
+    }
+    container.innerHTML = recs.map(r => `
+      <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong style="color:#0369a1;">${r.serviceName} (${r.departmentName})</strong>
+          <div style="font-size:0.8rem; color:#0284c7; margin-top:4px;">
+            ${r.reasons.map(res => `✓ ${res}`).join(' · ')}
+          </div>
+        </div>
+        <button class="btn-primary" style="font-size:0.85rem; padding:8px 16px;" onclick="applyWithPrefill('${r.serviceId}', ${JSON.stringify(r.prefillData).replace(/"/g, '&quot;')})">
+          Apply with pre-filled details
+        </button>
+      </div>
+    `).join('');
+  } catch (err) {
+    document.getElementById('recommendedList').innerHTML = `<p style="color:#94a3b8;">Recommendations unavailable.</p>`;
+  }
+}
+
+async function applyWithPrefill(serviceId, prefill) {
+  document.getElementById('serviceSelect').value = serviceId;
+  renderServiceFields();
+  for (const [key, val] of Object.entries(prefill)) {
+    const input = document.getElementById(`service-field-${key}`);
+    if (input) input.value = val;
+  }
+  document.getElementById('applyForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function refreshAccessLogs() {
+  try {
+    const logs = await api('/consent/access-logs');
+    document.querySelector('#accessLogsTable tbody').innerHTML = logs.map(l => `
+      <tr>
+        <td style="font-size:0.8rem; color:#64748b;">${fmtDate(l.timestamp)}</td>
+        <td><b>${l.requestingDepartmentName}</b></td>
+        <td><span class="badge badge-info">${l.fieldsCovered.join(', ')}</span></td>
+        <td style="font-family:monospace; font-size:0.8rem;">${l.consentId ? l.consentId.slice(0, 8) : 'Direct'}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">No access entries logged.</td></tr>';
+  } catch (err) {
+    document.querySelector('#accessLogsTable tbody').innerHTML = '<tr><td colspan="4" style="color:#94a3b8;">Access logs unavailable.</td></tr>';
+  }
+}
+
+async function sendAiMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('aiMessages');
+  msgs.innerHTML += `<div style="text-align:right; margin-bottom:8px;"><span style="background:#0066ff; color:white; padding:6px 12px; border-radius:8px; display:inline-block;">${msg}</span></div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+  try {
+    const res = await api('/assistant/chat', { method: 'POST', body: { message: msg } });
+    msgs.innerHTML += `<div style="background:#e2e8f0; padding:8px 12px; border-radius:8px; margin-bottom:8px; white-space:pre-wrap;"><b>[AI Assistant]</b> ${res.response}</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch (err) {
+    msgs.innerHTML += `<div style="background:#fee2e2; color:#991b1b; padding:8px; border-radius:8px; margin-bottom:8px;">Assistant unavailable</div>`;
+  }
+}
+
+function toggleKiosk() {
+  document.body.classList.toggle('kiosk-mode');
+  alert(document.body.classList.contains('kiosk-mode') ? 'Kiosk Mode Activated (Large High-Contrast View)' : 'Standard View Restored');
 }
 </script>
 </body>

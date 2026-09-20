@@ -3,32 +3,73 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Create account — SetuOne</title>
+<title>Create myAadhaar / SetuOne Account</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css" />
 </head>
-<body>
-<header class="masthead"><div class="seal">SetuOne<small>Unified Government Service Gateway — Maharashtra (Prototype)</small></div></header>
-<main>
-  <div class="auth-shell">
-    <h1 style="text-align:center">Create your SetuOne ID</h1>
-    <p class="lede" style="text-align:center;margin-left:auto;margin-right:auto">Register once, use it across every department. We check for existing records to avoid duplicates.</p>
-    <div class="card">
-      <div id="err"></div>
-      <form id="regForm">
-        <label>Full name</label><input id="name" required />
-        <label>Aadhaar number (format 0000-0000-0000)</label><input id="aadhaar" placeholder="1234-5678-9012" />
-        <label>Mobile number</label><input id="mobile" required />
-        <label>Date of birth</label><input id="dateOfBirth" type="date" />
-        <label>Email</label><input id="email" type="email" required />
-        <label>Password</label><input id="password" type="password" required />
-        <button class="primary" type="submit" style="width:100%">Create account</button>
-      </form>
+<body style="background:#f4f6f9;">
+
+<header class="gov-header">
+  <a href="index.html" class="gov-brand">
+    <svg class="gov-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5L15 25V75L50 95L85 75V25L50 5Z" fill="#0D2847"/>
+      <circle cx="50" cy="50" r="25" stroke="#FFFFFF" stroke-width="4"/>
+      <path d="M50 30V70M30 50H70" stroke="#FF9933" stroke-width="4"/>
+    </svg>
+    <div class="gov-brand-text">
+      <h1>Unique Identification Authority of India</h1>
+      <p>Government of India · Registration Gateway</p>
     </div>
-    <p style="text-align:center" class="hint">Already registered? <a href="/index.html">Sign in</a></p>
+  </a>
+
+  <nav class="gov-nav">
+    <a href="index.html" style="font-weight:600; color:#0066ff;">← Back to Sign in</a>
+  </nav>
+</header>
+
+<main class="main-content" style="max-width:540px; padding-top:40px;">
+  <div class="card-panel" style="padding:36px;">
+    <h2 class="section-title" style="text-align:center; font-size:1.6rem;">Create your myAadhaar Profile</h2>
+    <p class="section-desc" style="text-align:center; margin-bottom:24px;">Register once to access every connected government portal without re-submitting identity records.</p>
+    
+    <div id="err"></div>
+    <form id="regForm">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input id="name" class="form-control" required placeholder="e.g. Asha Patil" />
+      </div>
+      <div class="form-group">
+        <label>Aadhaar Number (12 digits)</label>
+        <input id="aadhaar" class="form-control" placeholder="1234-5678-9012" />
+      </div>
+      <div class="form-group">
+        <label>Mobile Number</label>
+        <input id="mobile" class="form-control" required placeholder="9876543210" />
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input id="dateOfBirth" type="date" class="form-control" />
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input id="email" type="email" class="form-control" required placeholder="you@example.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input id="password" type="password" class="form-control" required placeholder="••••••••" />
+      </div>
+      <button class="btn-primary" type="submit" style="width:100%; padding:12px; font-size:1rem; margin-top:8px;">
+        Register & Create Profile
+      </button>
+    </form>
+    
+    <p style="text-align:center; margin-top:20px; font-size:0.85rem; color:#64748b;">
+      Already registered? <a href="/index.html" style="color:#0066ff; font-weight:600; text-decoration:none;">Sign in to myAadhaar</a>
+    </p>
   </div>
 </main>
+
 <script src="js/api.js"></script>
 <script>
 document.getElementById('regForm').addEventListener('submit', async (e) => {
@@ -48,7 +89,7 @@ document.getElementById('regForm').addEventListener('submit', async (e) => {
     setSession(token, user);
     window.location.href = '/citizen.html';
   } catch (err) {
-    errBox.innerHTML = `<div class="error">${err.message}</div>`;
+    errBox.innerHTML = `<div class="error-msg">${err.message}</div>`;
   }
 });
 </script>

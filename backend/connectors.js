@@ -92,7 +92,57 @@ const connectors = {
         return { valid: true, district: record.PostOffice[0].District, state: record.PostOffice[0].State };
       }, { valid: false, reason: 'Pincode lookup unavailable; try again or use manual verification' });
     }
+  },
+  sdeRegistry: {
+    name: 'Skill Development & Employment Registry (mock)',
+    lookup(db, aadhaar) {
+      return call(db, 'sdeRegistry', { aadhaar }, () => ({
+        enrolled: true,
+        trade: 'Solar Technician & Electricals',
+        status: 'Certified & Employed',
+        certifiedDate: '2025-11-15'
+      }), { enrolled: false, manualVerificationRequired: true });
+    }
+  },
+  apiSetuMock: {
+    name: 'API Setu Gateway (Govt of India - Mock/Static)',
+    fetchCertificate(db, docType, aadhaar) {
+      return call(db, 'apiSetuMock', { docType, aadhaar }, () => ({
+        gateway: 'API Setu / MeitY National Open API Platform',
+        certificateType: docType,
+        status: 'ISSUED_AND_DIGITALLY_SIGNED',
+        issuer: 'Govt of Maharashtra Departmental Repository',
+        digitalSignatureVerified: true,
+        issuedAt: '2025-08-10T10:00:00Z',
+        data: docType === 'IncomeCertificate'
+          ? { annualIncome: 185000, validUntil: '2026-03-31' }
+          : { casteCategory: 'OBC', certificateNo: 'MH-SWD-2025-8841' }
+      }), { status: 'SERVICE_UNAVAILABLE', manualVerificationRequired: true });
+    }
   }
 };
 
-module.exports = { connectors };
+function maskSensitiveData(obj) {
+  if (!obj || typeof obj !== 'object') return obj;
+  if (Array.isArray(obj)) return obj.map(maskSensitiveData);
+  const sensitiveKeys = ['password', 'secret', 'token', 'key', 'authorization', 'aadhaar', 'pan', 'uri', 'url'];
+  const masked = {};
+  for (const [k, v] of Object.entries(obj)) {
+    const isSensitive = sensitiveKeys.some(sk => k.toLowerCase().includes(sk));
+    if (isSensitive && typeof v === 'string') {
+      if (k.toLowerCase().includes('aadhaar') && v.length >= 4) {
+        masked[k] = `XXXX-XXXX-${v.slice(-4)}`;
+      } else {
+        masked[k] = '***MASKED***';
+      }
+    } else if (typeof v === 'object' && v !== null) {
+      masked[k] = maskSensitiveData(v);
+    } else {
+      masked[k] = v;
+    }
+  }
+  return masked;
+}
+
+module.exports = { connectors, maskSensitiveData };
+

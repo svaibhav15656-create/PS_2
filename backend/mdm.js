@@ -68,4 +68,35 @@ function createFlag(db, candidateId, match) {
   return flag;
 }
 
-module.exports = { findPotentialDuplicates, createFlag };
+function mergeDuplicateCitizens(db, primaryId, duplicateId) {
+  const primary = db.users.find(u => u.id === primaryId && u.role === 'citizen');
+  const duplicate = db.users.find(u => u.id === duplicateId && u.role === 'citizen');
+  if (!primary || !duplicate) return { error: 'Primary or duplicate citizen record not found' };
+
+  for (const app of db.applications) {
+    if (app.citizenId === duplicateId) app.citizenId = primaryId;
+  }
+  for (const consent of db.consents) {
+    if (consent.citizenId === duplicateId) consent.citizenId = primaryId;
+  }
+  for (const notif of db.notifications) {
+    if (notif.citizenId === duplicateId) notif.citizenId = primaryId;
+  }
+
+  duplicate.status = 'merged';
+  duplicate.mergedInto = primaryId;
+
+  const resolvedFlags = [];
+  for (const flag of db.dataQualityFlags) {
+    if (flag.status === 'open' && flag.candidateIds.includes(duplicateId)) {
+      flag.status = 'resolved';
+      flag.resolvedAt = new Date().toISOString();
+      flag.resolution = `Merged duplicate citizen ${duplicateId} into ${primaryId}`;
+      resolvedFlags.push(flag.id);
+    }
+  }
+
+  return { success: true, primaryId, duplicateId, resolvedFlags };
+}
+
+module.exports = { findPotentialDuplicates, createFlag, mergeDuplicateCitizens };

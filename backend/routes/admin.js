@@ -71,4 +71,20 @@ router.patch('/data-quality/duplicates/:id/resolve', requireAuth, requireRole('a
   res.json(flag);
 });
 
-module.exports = router;
+const { mergeDuplicateCitizens } = require('../mdm');
+
+router.post('/data-quality/merge', requireAuth, requireRole('admin'), (req, res) => {
+  const { primaryId, duplicateId } = req.body || {};
+  if (!primaryId || !duplicateId) return res.status(400).json({ error: 'primaryId and duplicateId are required' });
+  if (primaryId === duplicateId) return res.status(400).json({ error: 'primaryId and duplicateId cannot be identical' });
+
+  const db = load();
+  const result = mergeDuplicateCitizens(db, primaryId, duplicateId);
+  if (result.error) return res.status(400).json(result);
+
+  logAction(db, { actor: req.user.name, actorRole: req.user.role, action: 'CITIZENS_MERGED', entity: 'citizen', entityId: primaryId, details: { duplicateId } });
+  save(db);
+  res.json(result);
+});
+
+module.exports = router;

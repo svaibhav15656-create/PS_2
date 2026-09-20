@@ -17,10 +17,10 @@ if (db.departments.length === 0) {
 
   const [rev, sde, fcs, swd] = depts;
   db.services.push(
-    { id: randomUUID(), departmentId: rev.id, name: 'Income Certificate', workflow: ['Submitted', 'Document Verification', 'Tehsildar Approval', 'Certificate Issued'], slaHours: 168, requiredFields: ['annualIncome', 'purpose'] },
-    { id: randomUUID(), departmentId: sde.id, name: 'Skill Training Enrollment', workflow: ['Submitted', 'Eligibility Check', 'Batch Allotment', 'Enrolled'], slaHours: 72, requiredFields: ['educationLevel', 'preferredTrade'] },
-    { id: randomUUID(), departmentId: fcs.id, name: 'New Ration Card', workflow: ['Submitted', 'Field Verification', 'FSO Approval', 'Card Issued'], slaHours: 240, requiredFields: ['familySize', 'address'] },
-    { id: randomUUID(), departmentId: swd.id, name: 'Scholarship Application', workflow: ['Submitted', 'Income/Caste Validation', 'Committee Review', 'Disbursed'], slaHours: 336, requiredFields: ['annualIncome', 'casteCategory', 'institutionName'] }
+    { id: randomUUID(), departmentId: rev.id, name: 'Income Certificate', workflow: ['Submitted', 'Document Verification', 'Tehsildar Approval', 'Certificate Issued'], slaHours: 168, requiredFields: ['annualIncome', 'purpose'], eligibility: [{ field: 'annualIncome', op: '<=', value: 800000 }] },
+    { id: randomUUID(), departmentId: sde.id, name: 'Skill Training Enrollment', workflow: ['Submitted', 'Eligibility Check', 'Batch Allotment', 'Enrolled'], slaHours: 72, requiredFields: ['educationLevel', 'preferredTrade'], eligibility: [{ field: 'age', op: '>=', value: 18 }] },
+    { id: randomUUID(), departmentId: fcs.id, name: 'New Ration Card', workflow: ['Submitted', 'Field Verification', 'FSO Approval', 'Card Issued'], slaHours: 240, requiredFields: ['familySize', 'address'], eligibility: [{ field: 'familySize', op: '>=', value: 1 }] },
+    { id: randomUUID(), departmentId: swd.id, name: 'Scholarship Application', workflow: ['Submitted', 'Income/Caste Validation', 'Committee Review', 'Disbursed'], slaHours: 336, requiredFields: ['annualIncome', 'casteCategory', 'institutionName'], eligibility: [{ field: 'annualIncome', op: '<=', value: 250000 }] }
   );
 
   const passwordHash = bcrypt.hashSync('password123', 8);

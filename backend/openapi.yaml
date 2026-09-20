@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: SetuOne Interoperability & MDM Gateway API
+  description: Standards-based API gateway and MDM middleware for cross-department government digital platform integration (SIH-129).
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api
+    description: Local Prototype Server
+paths:
+  /auth/login:
+    post:
+      summary: User Login (Citizen, Officer, Admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  example: asha@example.com
+                password:
+                  type: string
+                  example: password123
+      responses:
+        '200':
+          description: Login successful
+        '401':
+          description: Invalid credentials
+  /auth/register-citizen:
+    post:
+      summary: Register Citizen Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, mobile, email, password]
+              properties:
+                name: { type: string }
+                aadhaar: { type: string }
+                mobile: { type: string }
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Created
+        '409':
+          description: Duplicate citizen match
+  /applications:
+    get:
+      summary: List Applications
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: List of applications
+    post:
+      summary: Submit Service Application
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [serviceId, data]
+              properties:
+                serviceId: { type: string }
+                data: { type: object }
+      responses:
+        '201':
+          description: Application submitted
+        '400':
+          description: Data quality error or validation failure
+  /consent:
+    post:
+      summary: Grant Cross-Department Consent
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [departmentId, purpose]
+              properties:
+                departmentId: { type: string }
+                purpose: { type: string }
+                validForDays: { type: integer, default: 90 }
+      responses:
+        '201':
+          description: Consent granted
+  /connectors/health:
+    get:
+      summary: System Connector Health Check (Admin Only)
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Health stats and masked execution logs
+        '403':
+          description: Admin role required
+  /admin/data-quality/merge:
+    post:
+      summary: Merge Duplicate Citizen Profiles (Admin Only)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [primaryId, duplicateId]
+              properties:
+                primaryId: { type: string }
+                duplicateId: { type: string }
+      responses:
+        '200':
+          description: Profile merge completed
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

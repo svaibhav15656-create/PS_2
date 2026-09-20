@@ -5,9 +5,21 @@ function checkSlaBreaches(db) {
   const now = new Date();
   let changed = false;
   db.applications.forEach(app => {
-    if (app.status !== 'In Progress' || app.escalated) return;
+    if (app.status !== 'In Progress') return;
     const service = db.services.find(item => item.id === app.serviceId);
-    const deadline = new Date(new Date(app.createdAt).getTime() + (service?.slaHours || 72) * 3600000);
+    const slaMs = (service?.slaHours || 72) * 3600000;
+    const createdAtMs = new Date(app.createdAt).getTime();
+    const elapsed = now.getTime() - createdAtMs;
+
+    // Flag at-risk applications (elapsed time >= 70% of SLA duration)
+    const isAtRisk = elapsed >= (slaMs * 0.7) && elapsed < slaMs;
+    if (app.atRisk !== isAtRisk) {
+      app.atRisk = isAtRisk;
+      changed = true;
+    }
+
+    if (app.escalated) return;
+    const deadline = new Date(createdAtMs + slaMs);
     if (now <= deadline) return;
     app.escalated = true;
     app.escalatedAt = now.toISOString();
@@ -19,4 +31,4 @@ function checkSlaBreaches(db) {
   return changed;
 }
 
-module.exports = { checkSlaBreaches };
+module.exports = { checkSlaBreaches };

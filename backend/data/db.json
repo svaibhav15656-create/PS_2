@@ -1,0 +1,155 @@
+{
+  "users": [
+    {
+      "id": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "name": "Asha Patil",
+      "role": "citizen",
+      "aadhaar": "enc:9c78c1ab6314c2bb345ed9ee:c948f9cc27bf5cbdcf86f2906282f53e:82cdfb0c9b826545bbeff9673edd",
+      "mobile": "9876543210",
+      "email": "asha@example.com",
+      "passwordHash": "$2a$08$HUf9PH86e9DgakNCc61EzuFrorswxV9ojrAgqhBQCERfpqPX91tbS"
+    },
+    {
+      "id": "cee73feb-be83-42df-b034-e456bd514277",
+      "name": "Rohan Deshmukh",
+      "role": "officer",
+      "departmentId": "cb98cca2-3600-4806-b22a-40fc0170cb49",
+      "email": "rohan.rev@gov.in",
+      "passwordHash": "$2a$08$HUf9PH86e9DgakNCc61EzuFrorswxV9ojrAgqhBQCERfpqPX91tbS"
+    },
+    {
+      "id": "6a2eb291-dbe9-40be-abae-a13c474a56dc",
+      "name": "Neha Kulkarni",
+      "role": "officer",
+      "departmentId": "6ec63c08-a9f5-4a1a-9d1e-258f2b155fe3",
+      "email": "neha.sde@gov.in",
+      "passwordHash": "$2a$08$HUf9PH86e9DgakNCc61EzuFrorswxV9ojrAgqhBQCERfpqPX91tbS"
+    },
+    {
+      "id": "884e5a76-f5b4-42ce-abef-12b4aa37c302",
+      "name": "Admin User",
+      "role": "admin",
+      "email": "admin@gov.in",
+      "passwordHash": "$2a$08$HUf9PH86e9DgakNCc61EzuFrorswxV9ojrAgqhBQCERfpqPX91tbS"
+    }
+  ],
+  "departments": [
+    {
+      "id": "cb98cca2-3600-4806-b22a-40fc0170cb49",
+      "name": "Revenue Department",
+      "code": "REV"
+    },
+    {
+      "id": "6ec63c08-a9f5-4a1a-9d1e-258f2b155fe3",
+      "name": "Skill Development & Employment",
+      "code": "SDE"
+    },
+    {
+      "id": "edcae4e8-721b-401e-ab01-b38dad527a83",
+      "name": "Food & Civil Supplies (Ration Card)",
+      "code": "FCS"
+    },
+    {
+      "id": "1fa142f8-82dd-4128-a918-ae3d95849c0c",
+      "name": "Social Welfare Department",
+      "code": "SWD"
+    }
+  ],
+  "services": [
+    {
+      "id": "6e01d234-4323-4829-9b63-2dc6415734c9",
+      "departmentId": "cb98cca2-3600-4806-b22a-40fc0170cb49",
+      "name": "Income Certificate",
+      "workflow": [
+        "Submitted",
+        "Document Verification",
+        "Tehsildar Approval",
+        "Certificate Issued"
+      ],
+      "slaHours": 168,
+      "requiredFields": [
+        "annualIncome",
+        "purpose"
+      ]
+    },
+    {
+      "id": "eef1f78b-689b-4433-b36a-a4cb72766e7b",
+      "departmentId": "6ec63c08-a9f5-4a1a-9d1e-258f2b155fe3",
+      "name": "Skill Training Enrollment",
+      "workflow": [
+        "Submitted",
+        "Eligibility Check",
+        "Batch Allotment",
+        "Enrolled"
+      ],
+      "slaHours": 72,
+      "requiredFields": [
+        "educationLevel",
+        "preferredTrade"
+      ]
+    },
+    {
+      "id": "ea86cf30-04b2-40f0-8835-09b75a3fb37d",
+      "departmentId": "edcae4e8-721b-401e-ab01-b38dad527a83",
+      "name": "New Ration Card",
+      "workflow": [
+        "Submitted",
+        "Field Verification",
+        "FSO Approval",
+        "Card Issued"
+      ],
+      "slaHours": 240,
+      "requiredFields": [
+        "familySize",
+        "address"
+      ]
+    },
+    {
+      "id": "c5b9101a-ec4d-4b0a-990c-7f55cd143d9f",
+      "departmentId": "1fa142f8-82dd-4128-a918-ae3d95849c0c",
+      "name": "Scholarship Application",
+      "workflow": [
+        "Submitted",
+        "Income/Caste Validation",
+        "Committee Review",
+        "Disbursed"
+      ],
+      "slaHours": 336,
+      "requiredFields": [
+        "annualIncome",
+        "casteCategory",
+        "institutionName"
+      ]
+    }
+  ],
+  "applications": [],
+  "consents": [],
+  "auditLogs": [
+    {
+      "id": "0d35f714-a487-4437-935a-b8fd7cb3587e",
+      "actor": "Asha Patil",
+      "actorRole": "citizen",
+      "action": "LOGIN",
+      "entity": "user",
+      "entityId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "details": {},
+      "timestamp": "2026-09-20T06:51:09.749Z"
+    },
+    {
+      "id": "81ef0bac-972b-4280-a18a-9468238919e2",
+      "actor": "Asha Patil",
+      "actorRole": "citizen",
+      "action": "LOGIN",
+      "entity": "user",
+      "entityId": "f49f0109-384f-4f28-b118-bc5d849b27cf",
+      "details": {},
+      "timestamp": "2026-09-20T07:47:43.896Z"
+    }
+  ],
+  "notifications": [],
+  "connectorLogs": [],
+  "grievances": [],
+  "dataQualityFlags": [],
+  "dataAccessLogs": [],
+  "verifiedDocuments": []
+}

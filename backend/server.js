@@ -17,8 +17,12 @@ const auditRoutes = require('./routes/audit');
 const dashboardRoutes = require('./routes/dashboard');
 const grievanceRoutes = require('./routes/grievances');
 const adminRoutes = require('./routes/admin');
+const assistantRoutes = require('./routes/assistant');
 const { load, save } = require('./db');
 const { checkSlaBreaches } = require('./escalation');
+
+// Auto-seed demo data on first boot so the prototype works out of the box.
+try { require('./seed'); } catch (e) { console.error('Seed error:', e.message); }
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -27,18 +31,39 @@ if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
   throw new Error('JWT_SECRET is required when NODE_ENV=production');
 }
 
-app.use(cors());
-app.use(helmet());
+app.use(cors({ origin: (origin, cb) => cb(null, true), credentials: true }));
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      connectSrc: ["'self'", 'https://api.postalpincode.in'],
+      imgSrc: ["'self'", 'data:'],
+    }
+  }
+}));
 app.use(rateLimit({ windowMs: 15 * 60 * 1000, limit: 300, standardHeaders: 'draft-7', legacyHeaders: false }));
 app.use(express.json());
 
-// Simple request log (would be replaced by a real observability stack)
+// Request log
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
   next();
 });
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', time: new Date().toISOString() }));
+
+app.get('/api/docs', (req, res) => {
+  const fs = require('fs');
+  const specPath = path.join(__dirname, 'openapi.yaml');
+  if (fs.existsSync(specPath)) {
+    res.setHeader('Content-Type', 'text/yaml');
+    return res.send(fs.readFileSync(specPath, 'utf8'));
+  }
+  res.status(404).json({ error: 'OpenAPI specification file not found' });
+});
 
 app.get('/api/departments', (req, res) => {
   const db = load();
@@ -54,15 +79,14 @@ app.use('/api/audit-logs', auditRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/grievances', grievanceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/assistant', assistantRoutes);
 
 const escalationIntervalMs = Number(process.env.SLA_CHECK_INTERVAL_MS || 5 * 60 * 1000);
-// Production would run this scan as a durable cron or queue worker.
 setInterval(() => {
   const db = load();
   if (checkSlaBreaches(db)) save(db);
 }, escalationIntervalMs).unref();
 
-// Serve the frontend (static files) so the whole prototype runs from one process.
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 app.use((err, req, res, next) => {

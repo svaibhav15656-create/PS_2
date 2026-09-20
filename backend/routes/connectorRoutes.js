@@ -1,7 +1,7 @@
 const express = require('express');
 const { load, save } = require('../db');
-const { requireAuth } = require('../middleware/auth');
-const { connectors } = require('../connectors');
+const { requireAuth, requireRole } = require('../middleware/auth');
+const { connectors, maskSensitiveData } = require('../connectors');
 const { validateAadhaar, validatePan } = require('../validation');
 
 const router = express.Router();
@@ -36,9 +36,23 @@ router.post('/pincode/verify', requireAuth, async (req, res) => {
   res.json(result);
 });
 
-router.get('/health', requireAuth, (req, res) => {
+// API Setu Gateway (Govt of India Mock / Static Adapter)
+router.post('/apisetu/fetch-certificate', requireAuth, (req, res) => {
+  const { docType, aadhaar } = req.body || {};
+  if (!docType) return res.status(400).json({ error: 'docType is required (e.g. IncomeCertificate, CasteCertificate)' });
   const db = load();
-  const recent = db.connectorLogs.slice(-50).reverse();
+  const result = connectors.apiSetuMock.fetchCertificate(db, docType, aadhaar || '1234-5678-9012');
+  save(db);
+  res.json(result);
+});
+
+router.get('/health', requireAuth, requireRole('admin'), (req, res) => {
+  const db = load();
+  const recent = db.connectorLogs.slice(-50).reverse().map(log => ({
+    ...log,
+    request: maskSensitiveData(log.request),
+    response: maskSensitiveData(log.response)
+  }));
   const byConnector = {};
   for (const log of db.connectorLogs) {
     byConnector[log.connector] = byConnector[log.connector] || { total: 0, success: 0, error: 0 };
